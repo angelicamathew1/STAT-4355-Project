@@ -1,0 +1,119 @@
+---
+title: "linear models final project"
+author: "Thomas Metz"
+date: "2023-04-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+#getwd()
+df = read.csv("C:/Users/Thomas/Downloads/cleaned_communities.csv")
+head(df)
+cols = c('X.attribute.medIncome.numeric', 'X.attribute.PctUnemployed.numeric','X.attribute.PctFam2Par.numeric', 'X.attribute.PctLargHouseOccup.numeric','X.attribute.RentMedian.numeric','X.attribute.NumStreet.numeric', 'X.attribute.NumInShelters.numeric','X.attribute.PolicPerPop.numeric','X.attribute.agePct12t29.numeric','X.attribute.PopDens.numeric','X.attribute.NumKindsDrugsSeiz.numeric','X.attribute.ViolentCrimesPerPop.numeric' )
+#'', , , , ,, , , , , 
+
+#head(df)
+df = df[,cols]
+```
+1. fit the whole model:
+```{r}
+head(df)
+fit <- lm(X.attribute.ViolentCrimesPerPop.numeric~X.attribute.medIncome.numeric +  X.attribute.PctUnemployed.numeric + X.attribute.PctFam2Par.numeric + X.attribute.PctLargHouseOccup.numeric+ X.attribute.RentMedian.numeric + X.attribute.NumStreet.numeric + X.attribute.NumInShelters.numeric + X.attribute.PolicPerPop.numeric + X.attribute.agePct12t29.numeric + X.attribute.PopDens.numeric + X.attribute.NumKindsDrugsSeiz.numeric, data=df)
+
+summary(fit)
+```
+Residual analysis standard
+```{r}
+library(MASS)
+stdres(fit)
+
+
+ barplot(height = stdres(fit), names.arg = 1:123,
+main = "Standardized Residuals", xlab = "Index",
+ylab = "Standardized Resid", ylim=c(-4,4))
+#Add cutoff values. Either 2 or 3 can be chosen.
+abline(h=3, col = "Red", lwd=2)
+abline(h=-3, col = "Red", lwd=2)
+
+
+```
+residual analysis student
+```{r}
+studres(fit)
+
+
+range(studres(fit))
+
+#Set the range of y axis with argument ylim. Centering to zero is recomended.
+barplot(height = studres(fit), names.arg = 1:123,
+main = "Studentized Residuals", xlab = "Index",
+ylab = "Studentized Resid", ylim=c(-5,5))
+ #Add cutoff values. Either 2 or 3 can be chosen.
+abline(h=3, col = "Red", lwd=3)
+abline(h=-3, col = "Red", lwd=3)
+
+```
+R-student
+```{r}
+ RStudent <- rstudent(fit)
+
+range(RStudent)
+
+barplot(height = RStudent, names.arg = 1:123,
+main = "R Student Residuals", xlab = "Index",
+ylab = "R Student Resid", ylim=c(-5,5))
+cor.level <- 0.05/(2*25)
+cor.qt <- qt(cor.level, 123, lower.tail=F)
+
+abline(h=cor.qt , col = "Red", lwd=3)
+abline(h=-cor.qt , col = "Red", lwd=3)
+
+
+```
+influence points
+```{r}
+library(car)
+influenceIndexPlot(fit)
+```
+
+
+residual analysis
+```{r}
+library(car)
+par(mfrow=c(1,2))
+hist(studres(fit), breaks=10, freq=F, col="cornflowerblue",
+cex.axis=1.5, cex.lab=1.5, cex.main=2)
+qqPlot(fit)
+
+```
+residual analysis cont.
+```{r}
+library(car)
+residualPlot(fit, type="rstudent", quadratic=F, col = "dodgerblue",
+pch=16, cex=1.5, cex.axis=1.5, cex.lab=1.5)
+
+```
+
+Box-cox analysis
+```{r}
+#library(car)
+
+#boxcox <- boxCox(X.attribute.ViolentCrimesPerPop.numeric~X.attribute.medIncome.numeric +  X.attribute.PctUnemployed.numeric + X.attribute.PctFam2Par.numeric + X.attribute.PctLargHouseOccup.numeric+ X.attribute.RentMedian.numeric + X.attribute.NumStreet.numeric + X.attribute.NumInShelters.numeric + X.attribute.PolicPerPop.numeric + X.attribute.agePct12t29.numeric + X.attribute.PopDens.numeric + X.attribute.NumKindsDrugsSeiz.numeric, data = df,
+#lambda=seq(-2,2,1/10)))
+
+#boxcox.utility$x[which.max(boxcox.utility$y)]
+```
+
+
+model building
+```{r}
+install.packages('olsrr')
+library(olsrr)
+MS_ALL = ols_step_all_possible(fit)
+MS_ALL[which.max(MS_ALL$adjr),]
+ols_step_forward_p(fit)
+ols_step_backward_p(fit)
+
+
+
+```
