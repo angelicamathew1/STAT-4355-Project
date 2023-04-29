@@ -1,0 +1,28 @@
+---
+title: "STAT_4355_Project"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#READING CSV AND SUBSETTING
+crime_data <- read.csv("C:/Users/anju/OneDrive/Documents/relevent_columns_community.csv")
+
+summary(crime_data)
+```
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(readr)
+
+crime <- melt(crime_data, id.vars='X.attribute.ViolentCrimesPerPop.numeric')
+
+ggplot(crime)+
+geom_jitter(aes(value, X.attribute.ViolentCrimesPerPop.numeric),)+
+geom_smooth(aes(value,X.attribute.ViolentCrimesPerPop.numeric, colour=variable), method=lm, se=FALSE)+
+facet_wrap(~variable, scales="free_x")
+```
